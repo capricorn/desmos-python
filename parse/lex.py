@@ -1,3 +1,4 @@
+import string
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import List
@@ -9,6 +10,7 @@ class LexToken:
         COMMAND_ARG_START = auto()
         COMMAND_ARG_END = auto()
         NUMBER = auto()
+        VAR = auto()
     
     type: Type
     value: str
@@ -76,6 +78,14 @@ def lex(input: str) -> List[LexToken]:
                         start_idx=i,
                         end_idx=i
                     ))
+                # TODO: Support a wider range of chars (greek letters, etc)
+                elif ch in string.ascii_lowercase :
+                    tokens.append(LexToken(
+                        type=LexToken.Type.VAR,
+                        value=ch,
+                        start_idx=i,
+                        end_idx=i
+                    ))
             
         i += 1
     
@@ -86,7 +96,7 @@ def lex(input: str) -> List[LexToken]:
                 token_type = LexToken.Type.COMMAND
             case LexState.NUMBER:
                 token_type = LexToken.Type.NUMBER
-
+        
         if token_type:
             tokens.append(LexToken(
                 type=token_type,

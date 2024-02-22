@@ -27,3 +27,9 @@ def test_number_lex():
     assert len(tokens) == 6
     assert '2' in numbers
     assert '3.2' in numbers
+
+def test_var_lex():
+    input = 'x\\cdot\\sqrt{2}'
+    tokens = lex.lex(input)
+
+    assert tokens[0].value == 'x'
