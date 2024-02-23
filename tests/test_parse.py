@@ -15,3 +15,14 @@ def test_parse_variable():
 
     assert isinstance(var.result, parse.ASTVar)
     assert var.result.name == 'x'
+
+def test_parse_infix_binary_op():
+    tokens = lex.lex('5+3')
+    ast = parse.parse_infix_binary_op(tokens)
+
+    op = ast.result
+
+    assert isinstance(op, parse.ASTBinaryOp)
+    assert op.type == parse.ASTBinaryOp.Type.ADD
+    assert isinstance(op.left_arg, parse.ASTNumber)
+    assert isinstance(op.right_arg, parse.ASTNumber)

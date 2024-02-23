@@ -1,11 +1,32 @@
 from dataclasses import dataclass
-from typing import List, Self
+from typing import List, Self, Optional
+from enum import Enum, auto
 
 from parse import lex
 
 @dataclass
 class ASTNode:
     children: List[Self]
+
+@dataclass 
+class ASTBinaryOp(ASTNode):
+    class Type(Enum):
+        ADD = auto() 
+        MULTIPLY = auto()
+
+        @staticmethod 
+        def from_token(funcToken: lex.LexToken.Type) -> Optional[Self]:
+            match funcToken.value:
+                case '+':
+                    return ASTBinaryOp.Type.ADD
+                case '\\cdot':
+                    return ASTBinaryOp.Type.MULTIPLY
+            
+            return None
+
+    type: Type
+    left_arg: ASTNode
+    right_arg: ASTNode
 
 @dataclass
 class ASTVar(ASTNode):
@@ -48,3 +69,33 @@ def parse_variable(tokens: List[lex.LexToken]) -> ParseResult:
             tokens[1:])
 
     raise ParseException(f'Failed to parse token as variable: {tokens[0].value}')
+
+def parse_infix_binary_op(tokens: List[lex.LexToken]) -> ParseResult:
+    ''' Parse operators of the form `a OP b`.
+
+    This differs from typical latex functions such as `\\frac{a}{b}` which pass
+    the args directly after.
+    '''
+
+    if len(tokens) < 3:
+        raise ParseException(f'Token list of insufficient length: {len(tokens)}')
+    
+    left_arg, function, right_arg = tokens[:3]
+    function_type = ASTBinaryOp.Type.from_token(function)
+
+    if function_type is None:
+        raise ParseException(f'Failed to extract function type: {function.value}')
+
+    left_arg = parse_number(tokens).result
+
+    # Currently no paren support
+    # Attempt to recursively parse the right arg
+    try:
+        right_arg = parse_infix_binary_op(tokens[2:])
+    except:
+        right_arg = parse_number(tokens[2:]).result
+
+    return ParseResult(
+        ASTBinaryOp(children=[], type=function_type, left_arg=left_arg, right_arg=right_arg),
+        tokens[3:]
+    )
