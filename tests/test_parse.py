@@ -26,3 +26,11 @@ def test_parse_infix_binary_op():
     assert op.type == parse.ASTBinaryOp.Type.ADD
     assert isinstance(op.left_arg, parse.ASTNumber)
     assert isinstance(op.right_arg, parse.ASTNumber)
+
+def test_binary_op_python_str():
+    tokens = lex.lex('5+3')
+    ast = parse.parse_infix_binary_op(tokens)
+    op = ast.result
+
+    # TODO: Preserve int as int
+    assert op.python == '(5.0+3.0)'

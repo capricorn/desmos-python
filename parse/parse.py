@@ -4,8 +4,13 @@ from enum import Enum, auto
 
 from parse import lex
 
+class PythonRepresentable():
+    @property
+    def python(self) -> str:
+        return ''
+
 @dataclass
-class ASTNode:
+class ASTNode(PythonRepresentable):
     children: List[Self]
 
 @dataclass 
@@ -23,18 +28,39 @@ class ASTBinaryOp(ASTNode):
                     return ASTBinaryOp.Type.MULTIPLY
             
             return None
-
+        
+        def __str__(self) -> str:
+            match self:
+                case ASTBinaryOp.Type.ADD:
+                    return '+'
+                case ASTBinaryOp.Type.MULTIPLY:
+                    return '*'
+        
     type: Type
     left_arg: ASTNode
     right_arg: ASTNode
+
+    @property
+    def python(self) -> str:
+        # TODO: Walk tree and collect variables 
+        return f'({self.left_arg.python}{str(self.type)}{self.right_arg.python})'
+
 
 @dataclass
 class ASTVar(ASTNode):
     name: str
 
+    @property
+    def python(self) -> str:
+        return self.name
+
 @dataclass
 class ASTNumber(ASTNode):
     number: float
+
+    @property
+    def python(self) -> str:
+        return str(self.number)
 
 @dataclass
 class ASTParen(ASTNode):
