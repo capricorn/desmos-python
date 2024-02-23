@@ -85,8 +85,10 @@ def lex(input: str) -> List[LexToken]:
                         start_idx=i,
                         end_idx=i
                     ))
-                    token_start = i+1
-                    state = LexState.ARG
+
+                    if i+1 < len(input) and (input[i+1] in string.ascii_lowercase or input[i+1].isdigit()):
+                        token_start = i+1
+                        state = LexState.ARG
                 elif ch == '}':
                     tokens.append(LexToken(
                         type=LexToken.Type.COMMAND_ARG_END,
