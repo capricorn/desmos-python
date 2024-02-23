@@ -61,7 +61,7 @@ class ASTBinaryOp(ASTNode):
         if isinstance(self.right_arg, ASTVar):
             results.append(self.right_arg.name)
         elif isinstance(self.right_arg, ASTBinaryOp):
-            results.extend(self.right_arg.vars())
+            results.extend(self.right_arg.vars)
         
         return results
 

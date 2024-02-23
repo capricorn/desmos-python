@@ -57,3 +57,10 @@ def test_binary_op_vars():
     op = ast.result
 
     assert op.vars == ['x','y']
+
+def test_binary_op_nested():
+    tokens = lex.lex('x+y+5+z')
+    ast = parse.parse_infix_binary_op(tokens)
+    op = ast.result
+
+    assert op.python_func == 'lambda x,y,z: (x+(y+(5.0+z)))'
