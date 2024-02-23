@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Self, Optional
+from typing import List, Self, Optional, Set
 from enum import Enum, auto
 
 from parse import lex
@@ -42,9 +42,28 @@ class ASTBinaryOp(ASTNode):
 
     @property
     def python(self) -> str:
-        # TODO: Walk tree and collect variables 
         return f'({self.left_arg.python}{str(self.type)}{self.right_arg.python})'
 
+    @property
+    def python_func(self) -> str:
+        # TODO: Walk tree and collect variables 
+        args = ','.join(self.vars)
+        if not args == '':
+            args = ' ' + args
+        return f'lambda{args}: {self.python}'
+
+    @property
+    def vars(self) -> List[str]:
+        results = []
+        if isinstance(self.left_arg, ASTVar):
+            results.append(self.left_arg.name)
+
+        if isinstance(self.right_arg, ASTVar):
+            results.append(self.right_arg.name)
+        elif isinstance(self.right_arg, ASTBinaryOp):
+            results.extend(self.right_arg.vars())
+        
+        return results
 
 @dataclass
 class ASTVar(ASTNode):
