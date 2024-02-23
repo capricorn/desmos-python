@@ -11,6 +11,7 @@ class LexToken:
         COMMAND_ARG_END = auto()
         NUMBER = auto()
         VAR = auto()
+        SUBSCRIPT = auto()
     
     type: Type
     value: str
@@ -93,7 +94,13 @@ def lex(input: str) -> List[LexToken]:
                         start_idx=i,
                         end_idx=i
                     ))
-            
+                elif ch == '_':
+                    tokens.append(LexToken(
+                        type=LexToken.Type.SUBSCRIPT,
+                        value=ch,
+                        start_idx=i,
+                        end_idx=i
+                    ))
         i += 1
     
     if token_start < len(input):

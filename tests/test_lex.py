@@ -46,3 +46,9 @@ def test_arithmetic_op_lex():
     assert tokens[4].type == lex.LexToken.Type.VAR
     assert tokens[5].type == lex.LexToken.Type.COMMAND
     assert tokens[6].type == lex.LexToken.Type.NUMBER
+
+def test_subscript_lex():
+    input = 'x_{1}+3'
+    tokens = lex.lex(input)
+
+    assert tokens[1].type == lex.LexToken.Type.SUBSCRIPT
