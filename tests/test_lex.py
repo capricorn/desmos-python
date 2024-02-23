@@ -52,3 +52,14 @@ def test_subscript_lex():
     tokens = lex.lex(input)
 
     assert tokens[1].type == lex.LexToken.Type.SUBSCRIPT
+
+def test_arg_lex():
+    input = 'x_{1}+\frac{1}{2}'
+    tokens = lex.lex(input)
+
+    #assert tokens
+    args = [ arg for arg in tokens if arg.type == lex.LexToken.Type.ARG ]
+    assert len(args) == 3
+
+    arg_values = [ arg.value for arg in args ]
+    assert arg_values == ['1', '1', '2']

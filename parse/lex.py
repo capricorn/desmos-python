@@ -12,6 +12,7 @@ class LexToken:
         NUMBER = auto()
         VAR = auto()
         SUBSCRIPT = auto()
+        ARG = auto()
     
     type: Type
     value: str
@@ -24,6 +25,7 @@ class LexState(Enum):
     NONE = auto()
     COMMAND = auto()
     NUMBER = auto()
+    ARG = auto()
 
 def lex(input: str) -> List[LexToken]:
     state = LexState.NONE
@@ -58,6 +60,17 @@ def lex(input: str) -> List[LexToken]:
                     # TODO: Find a way to avoid repeating state.. maybe lookahead is better?
                     state = LexState.NONE
                     continue
+            case LexState.ARG:
+                if ch == '}':
+                    tokens.append(LexToken(
+                        type=LexToken.Type.ARG,
+                        value=input[token_start:i],
+                        start_idx=token_start,
+                        end_idx=i
+                    ))
+                    state = LexState.NONE
+                    continue
+
             case LexState.NONE:
                 if ch == '\\':
                     state = LexState.COMMAND
@@ -72,6 +85,8 @@ def lex(input: str) -> List[LexToken]:
                         start_idx=i,
                         end_idx=i
                     ))
+                    token_start = i+1
+                    state = LexState.ARG
                 elif ch == '}':
                     tokens.append(LexToken(
                         type=LexToken.Type.COMMAND_ARG_END,
