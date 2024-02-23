@@ -9,7 +9,7 @@ class ASTNode:
 
 @dataclass
 class ASTVar(ASTNode):
-    ...
+    name: str
 
 @dataclass
 class ASTNumber(ASTNode):
@@ -37,3 +37,14 @@ def parse_number(tokens: List[lex.LexToken]) -> ParseResult:
             tokens[1:])
     
     raise ParseException(f'Failed to parse token as number: {tokens[0].value}')
+
+def parse_variable(tokens: List[lex.LexToken]) -> ParseResult:
+    if len(tokens) < 1:
+        raise ParseException('Empty token list.')
+    
+    if tokens[0].type == lex.LexToken.Type.VAR:
+        return ParseResult(
+            ASTVar(children=[], name=tokens[0].value),
+            tokens[1:])
+
+    raise ParseException(f'Failed to parse token as variable: {tokens[0].value}')
