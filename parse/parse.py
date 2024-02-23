@@ -96,6 +96,27 @@ def parse_variable(tokens: List[lex.LexToken]) -> ParseResult:
 
     raise ParseException(f'Failed to parse token as variable: {tokens[0].value}')
 
+def parse_infix_binary_op_left_arg(tokens: List[lex.LexToken]) -> ParseResult:
+    try:
+        return parse_number(tokens).result
+    except:
+        ...
+    
+    return parse_variable(tokens).result
+
+def parse_infix_binary_op_right_arg(tokens: List[lex.LexToken]) -> ParseResult:
+    try:
+        return parse_infix_binary_op(tokens).result
+    except:
+        ...
+    
+    try:
+        return parse_number(tokens).result
+    except:
+        ...
+
+    return parse_variable(tokens).result
+
 def parse_infix_binary_op(tokens: List[lex.LexToken]) -> ParseResult:
     ''' Parse operators of the form `a OP b`.
 
@@ -112,14 +133,9 @@ def parse_infix_binary_op(tokens: List[lex.LexToken]) -> ParseResult:
     if function_type is None:
         raise ParseException(f'Failed to extract function type: {function.value}')
 
-    left_arg = parse_number(tokens).result
-
+    left_arg = parse_infix_binary_op_left_arg(tokens)
     # Currently no paren support
-    # Attempt to recursively parse the right arg
-    try:
-        right_arg = parse_infix_binary_op(tokens[2:])
-    except:
-        right_arg = parse_number(tokens[2:]).result
+    right_arg = parse_infix_binary_op_right_arg(tokens[2:])
 
     return ParseResult(
         ASTBinaryOp(children=[], type=function_type, left_arg=left_arg, right_arg=right_arg),

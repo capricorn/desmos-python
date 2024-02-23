@@ -34,3 +34,11 @@ def test_binary_op_python_str():
 
     # TODO: Preserve int as int
     assert op.python == '(5.0+3.0)'
+
+def test_binary_op_with_vars_python_str():
+    tokens = lex.lex('x+y')
+    ast = parse.parse_infix_binary_op(tokens)
+    op = ast.result
+
+    # TODO: Preserve int as int
+    assert op.python == '(x+y)'
