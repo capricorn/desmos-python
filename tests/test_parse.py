@@ -51,7 +51,7 @@ def test_binary_op_lambda_str():
     op = ast.result
 
     # TODO: Preserve int as int
-    assert op.python_func == 'lambda x,y: (x+y)'
+    assert op.python_func_str == 'lambda x,y: (x+y)'
 
 def test_binary_op_vars():
     tokens = lex.lex('x+y')
@@ -65,7 +65,7 @@ def test_binary_op_nested():
     ast = parse.parse_infix_binary_op(tokens)
     op = ast.result
 
-    assert op.python_func == 'lambda x,y,z: (x+(y+(5.0+z)))'
+    assert op.python_func_str == 'lambda x,y,z: (x+(y+(5.0+z)))'
 
 def test_min_tokens_decorator():
     with pytest.raises(parse.ParseException):
@@ -80,3 +80,11 @@ def test_parse_subscript_var():
 
     assert isinstance(var, parse.ASTVar)
     assert var.name == 'x1'
+
+def test_parse_superscript_var():
+    tokens = lex.lex('x_{2}')
+    ast = parse.parse_var_superscript(tokens)
+    op = ast.result
+
+    assert isinstance(op, parse.ASTBinaryOp)
+    assert op.python_func(3) == 9

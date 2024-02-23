@@ -30,6 +30,7 @@ class ASTBinaryOp(ASTNode):
     class Type(Enum):
         ADD = auto() 
         MULTIPLY = auto()
+        POW = auto()
 
         @staticmethod 
         def from_token(funcToken: lex.LexToken.Type) -> Optional[Self]:
@@ -47,17 +48,23 @@ class ASTBinaryOp(ASTNode):
                     return '+'
                 case ASTBinaryOp.Type.MULTIPLY:
                     return '*'
+                case ASTBinaryOp.Type.POW:
+                    return '**'
         
     type: Type
     left_arg: ASTNode
     right_arg: ASTNode
 
     @property
+    def python_func(self):
+        return eval(self.python_func_str)
+
+    @property
     def python(self) -> str:
         return f'({self.left_arg.python}{str(self.type)}{self.right_arg.python})'
 
     @property
-    def python_func(self) -> str:
+    def python_func_str(self) -> str:
         # TODO: Walk tree and collect variables 
         args = ','.join(self.vars)
         if not args == '':
@@ -84,6 +91,14 @@ class ASTVar(ASTNode):
     @property
     def python(self) -> str:
         return self.name
+
+@dataclass
+class ASTArg(ASTNode):
+    value: str
+
+    @property
+    def python(self) -> str:
+        return self.value
 
 @dataclass
 class ASTNumber(ASTNode):
@@ -183,4 +198,29 @@ def parse_var_subscript(tokens: List[lex.LexToken]) -> ParseResult:
     return ParseResult(
         ASTVar(children=[], name=name),
         tokens[5:]
+    )
+
+@min_tokens(1)
+def parse_arg(tokens: List[lex.LexToken]) -> ParseResult:
+    return ParseResult(
+        ASTArg(children=[], value=tokens[0].value),
+        tokens[1:]
+    )
+
+@min_tokens(5)
+def parse_var_superscript(tokens: List[lex.LexToken]) -> ParseResult:
+    var,_,_,arg = tokens[:4]
+
+    var = parse_variable(tokens).result
+
+    if arg.type == lex.LexToken.Type.ARG:
+        arg = parse_arg(tokens[3:]).result
+        remaining = tokens[5:]
+    else:
+        # TODO: Parse expression between tokens
+        raise NotImplementedError()
+
+    return ParseResult(
+        ASTBinaryOp(children=[], type=ASTBinaryOp.Type.POW, left_arg=var, right_arg=arg),
+        remaining
     )
