@@ -1,3 +1,5 @@
+import pytest
+
 from parse import parse
 from parse import lex
 
@@ -64,3 +66,17 @@ def test_binary_op_nested():
     op = ast.result
 
     assert op.python_func == 'lambda x,y,z: (x+(y+(5.0+z)))'
+
+def test_min_tokens_decorator():
+    with pytest.raises(parse.ParseException):
+        parse.min_tokens(3)(lambda f: None)([1,2])
+
+    parse.min_tokens(3)(lambda f: None)([1,2,3])
+
+def test_parse_subscript_var():
+    tokens = lex.lex('x_{1}')
+    ast = parse.parse_var_subscript(tokens)
+    var = ast.result
+
+    assert isinstance(var, parse.ASTVar)
+    assert var.name == 'x1'

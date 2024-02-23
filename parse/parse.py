@@ -1,8 +1,20 @@
 from dataclasses import dataclass
-from typing import List, Self, Optional, Set
+from typing import List, Self, Optional, Callable
 from enum import Enum, auto
 
 from parse import lex
+
+def min_tokens(min_tokens: int):
+    def wrapper(f: Callable[[List[lex.LexToken]], ParseResult]):
+        def handle_tokens(tokens: List[lex.LexToken]) -> ParseResult:
+            if len(tokens) < min_tokens:
+                raise ParseException(f'Token list of insufficient length: {len(tokens)} < {min_tokens}')
+
+            return f(tokens)
+        
+        return handle_tokens
+    
+    return wrapper
 
 class PythonRepresentable():
     @property
@@ -159,4 +171,16 @@ def parse_infix_binary_op(tokens: List[lex.LexToken]) -> ParseResult:
     return ParseResult(
         ASTBinaryOp(children=[], type=function_type, left_arg=left_arg, right_arg=right_arg),
         tokens[3:]
+    )
+
+@min_tokens(5)
+def parse_var_subscript(tokens: List[lex.LexToken]) -> ParseResult:
+    # ex: x_{33}; 5 tokens -- [VAR, SUBSCRIPT, OPEN ARG CLOSE ]
+
+    var,_,_,arg,_ = tokens[:5]
+    name = var.value + arg.value
+
+    return ParseResult(
+        ASTVar(children=[], name=name),
+        tokens[5:]
     )
