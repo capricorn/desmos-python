@@ -33,3 +33,16 @@ def test_var_lex():
     tokens = lex.lex(input)
 
     assert tokens[0].value == 'x'
+
+def test_arithmetic_op_lex():
+    input = 'x+3-y+2'
+    tokens = lex.lex(input)
+
+    assert len(tokens) == 7
+    assert tokens[0].type == lex.LexToken.Type.VAR
+    assert tokens[1].type == lex.LexToken.Type.COMMAND
+    assert tokens[2].type == lex.LexToken.Type.NUMBER
+    assert tokens[3].type == lex.LexToken.Type.COMMAND
+    assert tokens[4].type == lex.LexToken.Type.VAR
+    assert tokens[5].type == lex.LexToken.Type.COMMAND
+    assert tokens[6].type == lex.LexToken.Type.NUMBER

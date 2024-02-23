@@ -86,6 +86,13 @@ def lex(input: str) -> List[LexToken]:
                         start_idx=i,
                         end_idx=i
                     ))
+                elif ch == '+' or ch == '-':
+                    tokens.append(LexToken(
+                        type=LexToken.Type.COMMAND,
+                        value=ch,
+                        start_idx=i,
+                        end_idx=i
+                    ))
             
         i += 1
     
