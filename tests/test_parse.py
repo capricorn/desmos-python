@@ -88,3 +88,22 @@ def test_parse_superscript_var():
 
     assert isinstance(op, parse.ASTBinaryOp)
     assert op.python_func(3) == 9
+
+def test_consume_scope():
+    tokens = lex.lex('\\frac{1}{2}')
+    scoped_tokens = parse.consume_bracket_scope(tokens[1:])
+
+    assert len(scoped_tokens.result) == 1
+    assert len(scoped_tokens.remainder) == 3
+
+def test_parse_binary_op():
+    tokens = lex.lex('\\frac{1}{2}+1')
+    ast = parse.parse_binary_op(tokens)
+    op = ast.result
+
+    assert isinstance(op, parse.ASTBinaryOp)
+    assert isinstance(op.left_arg, parse.ASTArg)
+    assert isinstance(op.right_arg, parse.ASTArg)
+    assert op.left_arg.value == '1'
+    assert op.right_arg.value == '2'
+    assert len(ast.remainder) == 2

@@ -31,6 +31,7 @@ class ASTBinaryOp(ASTNode):
         ADD = auto() 
         MULTIPLY = auto()
         POW = auto()
+        DIVIDE = auto()
 
         @staticmethod 
         def from_token(funcToken: lex.LexToken.Type) -> Optional[Self]:
@@ -39,6 +40,8 @@ class ASTBinaryOp(ASTNode):
                     return ASTBinaryOp.Type.ADD
                 case '\\cdot':
                     return ASTBinaryOp.Type.MULTIPLY
+                case '\\frac':
+                    return ASTBinaryOp.Type.DIVIDE
             
             return None
         
@@ -50,6 +53,8 @@ class ASTBinaryOp(ASTNode):
                     return '*'
                 case ASTBinaryOp.Type.POW:
                     return '**'
+                case ASTBinaryOp.Type.DIVIDE:
+                    return '/'
         
     type: Type
     left_arg: ASTNode
@@ -115,6 +120,11 @@ class ASTParen(ASTNode):
 @dataclass
 class ParseResult:
     result: ASTNode
+    remainder: List[lex.LexToken]
+
+@dataclass 
+class ScopeResult:
+    result: List[lex.LexToken]
     remainder: List[lex.LexToken]
 
 class ParseException(Exception):
@@ -224,3 +234,43 @@ def parse_var_superscript(tokens: List[lex.LexToken]) -> ParseResult:
         ASTBinaryOp(children=[], type=ASTBinaryOp.Type.POW, left_arg=var, right_arg=arg),
         remaining
     )
+
+# TODO: Return scope + remaining tokens (past scope)
+def consume_bracket_scope(tokens: List[lex.LexToken]) -> ScopeResult:
+    scoped_tokens = []
+    scope = 0
+    for i, token in enumerate(tokens):
+        if token.type == lex.LexToken.Type.COMMAND_ARG_START:
+            scope += 1
+            continue
+        elif token.type == lex.LexToken.Type.COMMAND_ARG_END:
+            assert scope >= 0
+            scope -= 1
+        
+        if scope == 0:
+            i += 1
+            break
+        else:
+            scoped_tokens.append(token)
+        
+    return ScopeResult(
+        result=scoped_tokens,
+        remainder=tokens[i:]
+    )
+
+def parse_binary_op(tokens: List[lex.LexToken]) -> ParseResult:
+    first_arg_scope = consume_bracket_scope(tokens[1:]) 
+    first_arg = first_arg_scope.result
+    second_arg_scope = consume_bracket_scope(first_arg_scope.remainder)
+    second_arg = second_arg_scope.result
+
+    first_arg = parse_arg(first_arg).result
+    second_arg = parse_arg(second_arg).result
+
+    return ParseResult(
+        ASTBinaryOp(
+            children=[], 
+            type=ASTBinaryOp.Type.from_token(tokens[0]), 
+            left_arg=first_arg, 
+            right_arg=second_arg),
+        remainder=second_arg_scope.remainder)
