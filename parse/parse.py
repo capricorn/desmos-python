@@ -236,7 +236,11 @@ def parse_var_superscript(tokens: List[lex.LexToken]) -> ParseResult:
     )
 
 # TODO: Return scope + remaining tokens (past scope)
-def consume_bracket_scope(tokens: List[lex.LexToken]) -> ScopeResult:
+def consume_scope(
+    tokens: List[lex.LexToken], 
+    start: lex.LexToken.Type, 
+    end: lex.LexToken.Type
+) -> ScopeResult:
     scoped_tokens = []
     scope = 0
     for i, token in enumerate(tokens):
@@ -259,9 +263,16 @@ def consume_bracket_scope(tokens: List[lex.LexToken]) -> ScopeResult:
     )
 
 def parse_binary_op(tokens: List[lex.LexToken]) -> ParseResult:
-    first_arg_scope = consume_bracket_scope(tokens[1:]) 
+    first_arg_scope = consume_scope(
+        tokens[1:],
+        start=lex.LexToken.Type.COMMAND_ARG_START,
+        end=lex.LexToken.Type.COMMAND_ARG_END)
     first_arg = first_arg_scope.result
-    second_arg_scope = consume_bracket_scope(first_arg_scope.remainder)
+
+    second_arg_scope = consume_scope(
+        first_arg_scope.remainder,
+        start=lex.LexToken.Type.COMMAND_ARG_START,
+        end=lex.LexToken.Type.COMMAND_ARG_END)
     second_arg = second_arg_scope.result
 
     first_arg = parse_arg(first_arg).result

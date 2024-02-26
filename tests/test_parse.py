@@ -91,7 +91,7 @@ def test_parse_superscript_var():
 
 def test_consume_scope():
     tokens = lex.lex('\\frac{1}{2}')
-    scoped_tokens = parse.consume_bracket_scope(tokens[1:])
+    scoped_tokens = parse.consume_scope(tokens[1:], start=lex.LexToken.Type.COMMAND_ARG_START, end=lex.LexToken.Type.COMMAND_ARG_END)
 
     assert len(scoped_tokens.result) == 1
     assert len(scoped_tokens.remainder) == 3
