@@ -27,7 +27,9 @@ class ASTNode(PythonRepresentable):
 
 @dataclass
 class ASTExpression(ASTNode):
-    ...
+    @property
+    def python(self) -> str:
+        return f'({self.children[0].python})'
 
 @dataclass 
 class ASTBinaryOp(ASTNode):

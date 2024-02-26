@@ -122,3 +122,4 @@ def test_parse():
     expr = ast.result
 
     assert isinstance(expr, parse.ASTExpression)
+    assert expr.python == '((1.0+(2.0+3.0)))'
