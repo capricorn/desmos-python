@@ -25,6 +25,10 @@ class PythonRepresentable():
 class ASTNode(PythonRepresentable):
     children: List[Self]
 
+@dataclass
+class ASTExpression(ASTNode):
+    ...
+
 @dataclass 
 class ASTBinaryOp(ASTNode):
     class Type(Enum):
@@ -244,10 +248,10 @@ def consume_scope(
     scoped_tokens = []
     scope = 0
     for i, token in enumerate(tokens):
-        if token.type == lex.LexToken.Type.COMMAND_ARG_START:
+        if token.type == start:
             scope += 1
             continue
-        elif token.type == lex.LexToken.Type.COMMAND_ARG_END:
+        elif token.type == end:
             assert scope >= 0
             scope -= 1
         
@@ -285,3 +289,25 @@ def parse_binary_op(tokens: List[lex.LexToken]) -> ParseResult:
             left_arg=first_arg, 
             right_arg=second_arg),
         remainder=second_arg_scope.remainder)
+    
+@min_tokens(2)
+def parse_expression(tokens: List[lex.LexToken]) -> ParseResult:
+    scope_tokens = consume_scope(
+        tokens=tokens,
+        start=lex.LexToken.Type.PAREN_LEFT,
+        end=lex.LexToken.Type.PAREN_RIGHT
+    ) 
+
+    expr = parse(scope_tokens.result)
+
+    return ParseResult(
+        ASTExpression(children=[expr.result]),
+        remainder=scope_tokens.remainder
+    )
+
+def parse(tokens: List[lex.LexToken]) -> ParseResult:
+    # TODO
+    return ParseResult(
+        result=ASTNode(children=[]),
+        remainder=[]
+    )

@@ -107,3 +107,10 @@ def test_parse_binary_op():
     assert op.left_arg.value == '1'
     assert op.right_arg.value == '2'
     assert len(ast.remainder) == 2
+
+def test_parse_expression():
+    tokens = lex.lex('(1+2+3)')
+    ast = parse.parse_expression(tokens)
+    expr = ast.result
+
+    assert isinstance(expr, parse.ASTExpression)
