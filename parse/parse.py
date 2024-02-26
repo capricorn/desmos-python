@@ -306,8 +306,24 @@ def parse_expression(tokens: List[lex.LexToken]) -> ParseResult:
     )
 
 def parse(tokens: List[lex.LexToken]) -> ParseResult:
-    # TODO
-    return ParseResult(
-        result=ASTNode(children=[]),
-        remainder=[]
-    )
+    # At the top-level the possibilities (currently) are:
+    # - Expression
+    # - Binary op
+    # TODO: Unary, function assignment
+    # TODO: 'Flat' binary op (using parens)
+    try:
+        return parse_expression(tokens)
+    except:
+        ...
+    
+    try:
+        return parse_binary_op(tokens)
+    except:
+        ... 
+
+    try:
+        return parse_infix_binary_op(tokens)
+    except:
+        ...
+    
+    raise ParseException('Failed to parse tokens.')

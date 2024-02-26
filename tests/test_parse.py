@@ -114,3 +114,11 @@ def test_parse_expression():
     expr = ast.result
 
     assert isinstance(expr, parse.ASTExpression)
+
+# TODO: pytest parameterize
+def test_parse():
+    tokens = lex.lex('(1+2+3)')
+    ast = parse.parse(tokens)
+    expr = ast.result
+
+    assert isinstance(expr, parse.ASTExpression)
