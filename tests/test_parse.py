@@ -116,10 +116,12 @@ def test_parse_expression():
     assert isinstance(expr, parse.ASTExpression)
 
 # TODO: pytest parameterize
-def test_parse():
-    tokens = lex.lex('(1+2+3)')
+@pytest.mark.parametrize('input_program,expected_python', [
+    ('(1+2+3)', '((1.0+(2.0+3.0)))'),
+])
+def test_parse(input_program, expected_python):
+    tokens = lex.lex(input_program)
     ast = parse.parse(tokens)
     expr = ast.result
 
-    assert isinstance(expr, parse.ASTExpression)
-    assert expr.python == '((1.0+(2.0+3.0)))'
+    assert expr.python == expected_python
