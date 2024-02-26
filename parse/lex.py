@@ -13,6 +13,8 @@ class LexToken:
         VAR = auto()
         SUBSCRIPT = auto()
         ARG = auto()
+        PAREN_LEFT = auto()
+        PAREN_RIGHT = auto()
     
     type: Type
     value: str
@@ -118,6 +120,21 @@ def lex(input: str) -> List[LexToken]:
                         start_idx=i,
                         end_idx=i
                     ))
+                elif ch == '(':
+                    tokens.append(LexToken(
+                        type=LexToken.Type.PAREN_LEFT,
+                        value=ch,
+                        start_idx=i,
+                        end_idx=i
+                    ))
+                elif ch == ')':
+                    tokens.append(LexToken(
+                        type=LexToken.Type.PAREN_RIGHT,
+                        value=ch,
+                        start_idx=i,
+                        end_idx=i
+                    ))
+
         i += 1
     
     if token_start < len(input):

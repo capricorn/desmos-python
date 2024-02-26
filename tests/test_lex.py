@@ -63,3 +63,10 @@ def test_arg_lex():
 
     arg_values = [ arg.value for arg in args ]
     assert arg_values == ['1', '1', '2']
+
+def test_paren_lex():
+    input = '()'
+    tokens = lex.lex(input)
+    token_types = list(map(lambda t: t.type, tokens))
+
+    assert token_types == [ lex.LexToken.Type.PAREN_LEFT, lex.LexToken.Type.PAREN_RIGHT ]
