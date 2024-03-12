@@ -358,3 +358,6 @@ def parse(tokens: List[lex.LexToken]) -> ParseResult:
         ...
     
     raise ParseException('Failed to parse tokens.')
+def parse_program(tex: str) -> ASTNode:
+    tokens = lex.lex(tex)
+    return parse(tokens).result
