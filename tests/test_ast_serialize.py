@@ -11,3 +11,10 @@ def test_serialize_ast_expression():
     json_dict  = json.loads(json_str)
 
     assert json_dict == { 'type': 'ASTExpression', 'children': [] }
+
+def test_serialize_var():
+    var = parse.ASTVar(children=[], name='x')
+    json_str = serialization.ASTVarEncoder().encode(var)
+    json_dict = json.loads(json_str)
+
+    assert json_dict == { 'type': 'ASTVar', 'name': 'x' }
