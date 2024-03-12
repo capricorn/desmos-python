@@ -25,3 +25,26 @@ def test_serialize_number():
     json_dict = json.loads(json_str)
 
     assert json_dict == { 'type': 'ASTNumber', 'number': '5' }
+
+def test_serialize_binary_op():
+    bin_op = parse.ASTBinaryOp(
+        children=[], 
+        type=parse.ASTBinaryOp.Type.MULTIPLY,
+        left_arg=parse.ASTNumber(children=[], number=5),
+        right_arg=parse.ASTNumber(children=[], number=7))
+
+    json_str = serialization.ASTBinaryOpEncoder().encode(bin_op)
+    json_dict = json.loads(json_str)
+
+    assert json_dict == { 
+        'type': 'ASTBinaryOp',
+        'op': '*',
+        'left_arg': {
+            'type': 'ASTNumber',
+            'number': '5'
+        },
+        'right_arg': {
+            'type': 'ASTNumber',
+            'number': '7'
+        }
+    }

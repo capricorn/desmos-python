@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import List, Self, Optional, Callable
+from typing import Any, List, Self, Optional, Callable
 from enum import Enum, auto
+from json import JSONEncoder
 
 from parse import lex
 
@@ -21,12 +22,23 @@ class PythonRepresentable():
     def python(self) -> str:
         return ''
 
+class DictRepresentable():
+    # TODO: ABC?
+    @property
+    def dict(self) -> dict:
+        return {}
+
 @dataclass
-class ASTNode(PythonRepresentable):
+class ASTNode(PythonRepresentable, DictRepresentable):
     children: List[Self]
 
 @dataclass
 class ASTExpression(ASTNode):
+    @property
+    def dict(self) -> dict:
+        # TODO: Iterate children
+        return { 'type': 'ASTExpression', 'children': []}
+
     @property
     def python(self) -> str:
         return f'({self.children[0].python})'
@@ -67,6 +79,15 @@ class ASTBinaryOp(ASTNode):
     right_arg: ASTNode
 
     @property
+    def dict(self) -> dict:
+        return {
+            'type': 'ASTBinaryOp',
+            'op': str(self.type),
+            'left_arg': self.left_arg.dict,
+            'right_arg': self.right_arg.dict
+        }
+
+    @property
     def python_func(self):
         return eval(self.python_func_str)
 
@@ -100,6 +121,10 @@ class ASTVar(ASTNode):
     name: str
 
     @property
+    def dict(self) -> dict:
+        return { 'type': 'ASTVar', 'name': self.name }
+
+    @property
     def python(self) -> str:
         return self.name
 
@@ -114,6 +139,10 @@ class ASTArg(ASTNode):
 @dataclass
 class ASTNumber(ASTNode):
     number: float
+
+    @property
+    def dict(self) -> dict:
+        return { 'type': 'ASTNumber', 'number': str(self.number) }
 
     @property
     def python(self) -> str:

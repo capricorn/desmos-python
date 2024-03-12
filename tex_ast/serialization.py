@@ -3,13 +3,16 @@ from json import JSONEncoder
 
 class ASTExpressionEncoder(JSONEncoder):
     def default(self, o: Any) -> Any:
-        return { 'type': 'ASTExpression', 'children': []}
+        return o.dict
     
-
 class ASTVarEncoder(JSONEncoder):
     def default(self, o: Any) -> Any:
-        return { 'type': 'ASTVar', 'name': o.name }
+        return o.dict
 
 class ASTNumberEncoder(JSONEncoder):
     def default(self, o: Any) -> Any:
-        return { 'type': 'ASTNumber', 'number': str(o.number) }
+        return o.dict
+
+class ASTBinaryOpEncoder(JSONEncoder):
+    def default(self, o: Any) -> Any:
+        return o.dict
