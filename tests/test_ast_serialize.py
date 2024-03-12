@@ -18,3 +18,10 @@ def test_serialize_var():
     json_dict = json.loads(json_str)
 
     assert json_dict == { 'type': 'ASTVar', 'name': 'x' }
+
+def test_serialize_number():
+    num = parse.ASTNumber(children=[], number=5)
+    json_str = serialization.ASTNumberEncoder().encode(num)
+    json_dict = json.loads(json_str)
+
+    assert json_dict == { 'type': 'ASTNumber', 'number': '5' }
