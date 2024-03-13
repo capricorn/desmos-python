@@ -15,6 +15,15 @@ class LexToken:
         ARG = auto()
         PAREN_LEFT = auto()
         PAREN_RIGHT = auto()
+
+    @property
+    def unary_command(self) -> bool:
+        # Technically subscript/superscript are unary
+        unary_commands = [
+            '\\sqrt', '-',
+        ]
+
+        return (self.type == LexToken.Type.COMMAND) and (self.value in unary_commands)
     
     type: Type
     value: str

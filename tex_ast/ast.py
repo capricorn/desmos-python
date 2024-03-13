@@ -139,3 +139,31 @@ class ASTNumber(ASTNode):
 class ASTParen(ASTNode):
     ...
 
+@dataclass
+class ASTUnaryCommand(ASTNode):
+    class Type(Enum):
+        SQRT = auto()
+        NEGATIVE = auto()
+
+        @staticmethod 
+        def from_token(funcToken: lex.LexToken.Type) -> Optional[Self]:
+            match funcToken.value:
+                case '\\sqrt':
+                    return ASTUnaryCommand.Type.SQRT
+                case '-':
+                    return ASTUnaryCommand.Type.NEGATIVE
+            
+            return None
+
+    type: Type
+    arg: ASTNode
+
+    @property
+    def dict(self) -> dict:
+        # TODO
+        raise NotImplementedError()
+    
+    @property
+    def python(self) -> str:
+        # TODO
+        raise NotImplementedError()

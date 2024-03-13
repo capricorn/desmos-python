@@ -31,7 +31,9 @@ def parse_number(tokens: List[lex.LexToken]) -> ParseResult:
     if len(tokens) < 1:
         raise ParseException('Empty token list.')
     
-    if tokens[0].type == lex.LexToken.Type.NUMBER:
+    # TODO: Drop arg type
+    if tokens[0].type == lex.LexToken.Type.NUMBER or \
+        tokens[0].type == lex.LexToken.Type.ARG:
         return ParseResult(
             ASTNumber(children=[], number=float(tokens[0].value)), 
             tokens[1:])
@@ -241,9 +243,29 @@ def parse_implicit_multiplication(tokens: List[lex.LexToken]) -> ParseResult:
     )
 
 # Think: prefix op
+@min_tokens(1)
 def parse_unary_op(tokens: List[lex.LexToken]) -> ParseResult:
-    ...
+    if not tokens[0].unary_command:
+        raise ParseException()
+    
+    # TODO: Should parse any subexpression 
+    command_type = ASTUnaryCommand.Type.from_token(tokens[0])
+    arg_tokens = consume_scope(
+        tokens=tokens[1:], 
+        start=lex.LexToken.Type.COMMAND_ARG_START,
+        end=lex.LexToken.Type.COMMAND_ARG_END)
+    arg_parse = parse(arg_tokens.result)
 
+    print(arg_tokens.result)
+
+    return ParseResult(
+        result=ASTUnaryCommand(
+            children=[],
+            type=command_type,
+            arg=arg_parse.result),
+        remainder=arg_parse.remainder)
+
+# `parse_expression` should parse any substructure 
 def parse(tokens: List[lex.LexToken]) -> ParseResult:
     # At the top-level the possibilities (currently) are:
     # - Expression
@@ -262,6 +284,11 @@ def parse(tokens: List[lex.LexToken]) -> ParseResult:
 
     try:
         return parse_infix_binary_op(tokens)
+    except:
+        ...
+    
+    try:
+        return parse_number(tokens)
     except:
         ...
     

@@ -2,7 +2,7 @@ import pytest
 
 from parse import parse
 from parse import lex
-from tex_ast import serialization
+from tex_ast.ast import *
 
 def test_parse_number():
     tokens = lex.lex('5\\cdot 3')
@@ -108,6 +108,17 @@ def test_parse_binary_op():
     assert op.left_arg.value == '1'
     assert op.right_arg.value == '2'
     assert len(ast.remainder) == 2
+
+def test_parse_unary_op():
+    tokens = lex.lex('\\sqrt{2}')
+    ast = parse.parse_unary_op(tokens)
+    unary: ASTUnaryCommand = ast.result
+
+    assert unary.type == ASTUnaryCommand.Type.SQRT
+    assert isinstance(unary.arg, parse.ASTNumber)
+
+    num_arg: ASTNumber = unary.arg
+    assert num_arg.number == 2
 
 def test_parse_expression():
     tokens = lex.lex('(1+2+3)')
