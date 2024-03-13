@@ -336,6 +336,82 @@ def parse_expression(tokens: List[lex.LexToken]) -> ParseResult:
         remainder=scope_tokens.remainder
     )
 
+def consume_while(tokens: List[lex.LexToken], pred: Callable[[lex.LexToken], bool]) -> ScopeResult:
+    for i in range(len(tokens)):
+        if not pred(tokens[i]):
+            break
+    
+    return ScopeResult(tokens[:i+1], tokens[i:])
+
+def parse_implicit_multiplication(tokens: List[lex.LexToken]) -> ParseResult:
+    ''' Parse a sequence of the form (Var|Number)+; ex: 2xt 
+    
+    This should produce a tree of the form 2*(x*t)
+    '''
+
+    # Simple: consume the sequence as long as (Number|Var) is satisfied
+    # One issue: the final var needs to _not_ have a trailing command applied
+    # TODO: Implement `consume_while` predicate
+    #is_implicit = lambda token: 
+    def is_implicit(token: lex.LexToken) -> bool:
+        # TODO: Check that following token is not a postfix command
+        # In that case, may need to pass more state (pos, tokens, ...) 
+        return (token.type == lex.LexToken.Type.VAR) or (token.type == lex.LexToken.Type.NUMBER)
+    
+    consume_result = consume_while(tokens, is_implicit)
+    print(f'consume result: {consume_result.result}')
+
+    def token_node(token: lex.LexToken) -> Optional[ASTNode]:
+        match token.type:
+            case lex.LexToken.Type.NUMBER:
+                return ASTNumber(children=[], number=token.value)
+            case lex.LexToken.Type.VAR:
+                return ASTVar(children=[], name=token.value)
+        
+        return None
+
+    # TODO: Generic approach to building n-ary trees?
+    # TODO: Worth testing tree building elsewhere..?
+    def build_tree(tokens: List[lex.LexToken]) -> ASTBinaryOp:
+        assert len(tokens) > 1
+        node = ASTBinaryOp(
+            children=[],
+            type=ASTBinaryOp.Type.MULTIPLY,
+            left_arg=None,
+            right_arg=None)
+
+        node.left_arg = token_node(tokens[0])#ASTNode(tokens[0])   # TODO: Process as node
+        node.right_arg = build_tree_rec(tokens[1:], node)
+        return node
+
+    def build_tree_rec(tokens: List[lex.LexToken], parent: ASTBinaryOp) -> ASTNode:
+        print(f'tokens: {tokens}')
+        if len(tokens) > 1:
+            node = ASTBinaryOp(
+                children=[], 
+                type=ASTBinaryOp.Type.MULTIPLY, 
+                left_arg=None, 
+                right_arg=None)
+
+            print('building sub op')
+            # TODO: Obtain proper node type (should be VAR/NUMBER)
+            node.left_arg = token_node(tokens[0])#ASTNode(tokens[0])
+            node.right_arg = build_tree_rec(tokens[1:], node)
+            return node
+        else:
+            # TODO: Obtain node from lexical token
+            return token_node(tokens[0])#ASTNode(children=[tokens[0]])
+
+
+    ast = build_tree(consume_result.result)
+    # TODO: Join tokens to binary op tree
+    # Probably best to join recursively? (A reduce could work..?)
+
+    return ParseResult(
+        result=ast,
+        remainder=consume_result.remainder
+    )
+
 def parse(tokens: List[lex.LexToken]) -> ParseResult:
     # At the top-level the possibilities (currently) are:
     # - Expression
@@ -358,6 +434,7 @@ def parse(tokens: List[lex.LexToken]) -> ParseResult:
         ...
     
     raise ParseException('Failed to parse tokens.')
+
 def parse_program(tex: str) -> ASTNode:
     tokens = lex.lex(tex)
     return parse(tokens).result

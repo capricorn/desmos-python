@@ -2,6 +2,7 @@ import pytest
 
 from parse import parse
 from parse import lex
+from tex_ast import serialization
 
 def test_parse_number():
     tokens = lex.lex('5\\cdot 3')
@@ -125,3 +126,38 @@ def test_parse(input_program, expected_python):
     expr = ast.result
 
     assert expr.python == expected_python
+
+def test_implicit_multiplication_parse():
+    tokens = lex.lex('2xt')
+    ast = parse.parse_implicit_multiplication(tokens)
+
+    assert len(tokens) == 3
+
+    # TODO: Dump AST as json
+    # (Need to implement -- least painful approach in py?)
+
+    #print(serialization.ASTNodeEncoder().encode(ast.result))
+
+    # TODO: Manually build tree, compare serialization?
+    expected_dict = {
+        'type': 'ASTBinaryOp',
+        'op': '*',
+        'left_arg': {
+            'type': 'ASTNumber',
+            'number': '2'
+        },
+        'right_arg': {
+            'type': 'ASTBinaryOp',
+            'op': '*',
+            'left_arg': {
+                'type': 'ASTVar',
+                'name': 'x'
+            },
+            'right_arg': {
+                'type': 'ASTVar',
+                'name': 't'
+            }
+        }
+    }
+
+    assert ast.result.dict == expected_dict
