@@ -4,6 +4,7 @@ from enum import Enum, auto
 from json import JSONEncoder
 
 from parse import lex
+from parse.primitives import consume_scope, consume_while
 from tex_ast.ast import *
 
 def min_tokens(min_tokens: int):
@@ -21,11 +22,6 @@ def min_tokens(min_tokens: int):
 @dataclass
 class ParseResult:
     result: ASTNode
-    remainder: List[lex.LexToken]
-
-@dataclass 
-class ScopeResult:
-    result: List[lex.LexToken]
     remainder: List[lex.LexToken]
 
 class ParseException(Exception):
@@ -136,33 +132,6 @@ def parse_var_superscript(tokens: List[lex.LexToken]) -> ParseResult:
         remaining
     )
 
-# TODO: Return scope + remaining tokens (past scope)
-def consume_scope(
-    tokens: List[lex.LexToken], 
-    start: lex.LexToken.Type, 
-    end: lex.LexToken.Type
-) -> ScopeResult:
-    scoped_tokens = []
-    scope = 0
-    for i, token in enumerate(tokens):
-        if token.type == start:
-            scope += 1
-            continue
-        elif token.type == end:
-            assert scope >= 0
-            scope -= 1
-        
-        if scope == 0:
-            i += 1
-            break
-        else:
-            scoped_tokens.append(token)
-        
-    return ScopeResult(
-        result=scoped_tokens,
-        remainder=tokens[i:]
-    )
-
 def parse_binary_op(tokens: List[lex.LexToken]) -> ParseResult:
     first_arg_scope = consume_scope(
         tokens[1:],
@@ -201,13 +170,6 @@ def parse_expression(tokens: List[lex.LexToken]) -> ParseResult:
         ASTExpression(children=[expr.result]),
         remainder=scope_tokens.remainder
     )
-
-def consume_while(tokens: List[lex.LexToken], pred: Callable[[lex.LexToken], bool]) -> ScopeResult:
-    for i in range(len(tokens)):
-        if not pred(tokens[i]):
-            break
-    
-    return ScopeResult(tokens[:i+1], tokens[i:])
 
 def parse_implicit_multiplication(tokens: List[lex.LexToken]) -> ParseResult:
     ''' Parse a sequence of the form (Var|Number)+; ex: 2xt 
